@@ -1,9 +1,9 @@
 ---
-name: design-deai
-description: Scans a web codebase for AI-default design patterns (Inter font, purple gradients, 3-column card grids, excessive border-radius) and automatically fixes them. Generates a project-specific design system, then applies changes across HTML/CSS, Tailwind, and React/Next.js files. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "generic design", or asks to improve existing website aesthetics.
+name: ui-refiner
+description: Scans a web codebase for AI-default design patterns (Inter font, purple gradients, 3-column card grids, excessive border-radius) and refines them into distinctive, human-crafted UI. Generates a project-specific design system, then applies changes across HTML/CSS, Tailwind, and React/Next.js files. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "generic design", or asks to improve existing website aesthetics.
 ---
 
-# Design De-AI
+# UI Refiner
 
 Treat yourself as a design lead auditing a site that looks "AI-generated." Work in three phases: scan, design, fix.
 
@@ -59,4 +59,4 @@ Work section by section — hero → nav → features → footer. Do not rewrite
 - "디자인 점검해줘"
 - "AI처럼 보이는 부분 고쳐줘"
 - "웹사이트 디자인 개선해줘"
-- "/design-deai"
+- "/ui-refiner"
