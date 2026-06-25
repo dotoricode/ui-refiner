@@ -1,0 +1,17 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "ui-refiner",
+  "description": "AI 티 나는 웹 UI를 개성 있는 디자인으로 정제하는 ui-refiner 스킬 마켓플레이스",
+  "owner": {
+    "name": "dotoricode"
+  },
+  "plugins": [
+    {
+      "name": "ui-refiner",
+      "description": "웹 코드베이스의 AI 기본값 디자인 패턴을 감지·시각 검수하고 프로젝트 고유 디자인 시스템으로 정제하는 스킬",
+      "source": "./",
+      "category": "design",
+      "homepage": "https://github.com/dotoricode/ui-refiner"
+    }
+  ]
+}
