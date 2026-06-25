@@ -1,213 +1,211 @@
 ---
 name: ui-refiner
-description: 웹 코드베이스에서 AI 기본값 디자인 패턴(Inter 폰트, 보라 그래디언트, 3열 카드 그리드, 과도한 border-radius)을 감지하고, 브라우저 스크린샷으로 시각적으로 검수한 뒤, 프로젝트 고유 디자인 시스템을 생성하고 적용한다. 필요하면 스택 마이그레이션까지 수행한다. 사용자가 "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "generic design", 또는 웹사이트 디자인 개선을 언급할 때 실행한다.
+description: Scans a web codebase for AI-default design patterns (Inter font, purple gradients, 3-column card grids, excessive border-radius), visually inspects the rendered UI via browser screenshot, generates a project-specific design system, and applies the changes. Performs stack migration when needed. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "UI 검수", "generic design", or asks to improve existing website aesthetics.
 ---
 
-# UI 리파이너
+# UI Refiner
 
-디자인 리드 역할로 "AI가 만든 것 같은" 사이트를 감사한다. 5단계로 진행: 시각적 스냅샷 → 감사 → 기반+디자인 시스템 → 스택 마이그레이션+적용 → 시각적 검증.
-
----
-
-## Phase 0 — 시각적 스냅샷 (선택)
-
-MCP 스크린샷 도구(Preview MCP, Claude in Chrome)가 연결되어 있으면 실행한다.
-
-1. 실행 중인 사이트 스크린샷 촬영
-2. **4개 차원** 시각적 분석:
-   - **타이포그래피**: 폰트 개성, 굵기 대비, 스케일 점프
-   - **색상**: 팔레트 개성, 그래디언트 남발 여부
-   - **모션**: 애니메이션 존재·일관성 (분산된 효과 vs 조율된 연출)
-   - **배경**: 대기감 깊이, 단색 vs 레이어드
-3. 시각적 발견 사항을 Phase 1 코드 스캔 결과와 교차 비교
-
-스크린샷 도구 없으면 → Phase 1로 바로 진행.
+Act as a design lead auditing a site that looks "AI-generated." Work in five phases: visual snapshot → audit → ground + design system → stack migration + apply → visual verify.
 
 ---
 
-## Phase 1 — 감사 (Audit)
+## Phase 0 — Visual Snapshot (optional)
 
-코드베이스에서 AI 기본 패턴을 스캔한다. 패턴 전체 카탈로그는 [REFERENCE.md](REFERENCE.md)를 참조.
+Run this phase only when an MCP screenshot tool is connected (Preview MCP, Claude in Chrome).
 
-### 1-1. 코드 패턴 스캔
+1. Take a screenshot of the running site
+2. Analyze across **4 dimensions**:
+   - **Typography**: font personality, weight contrast, scale jumps
+   - **Color**: palette distinctiveness, gradient overuse
+   - **Motion**: animation presence and coherence (scattered effects vs. orchestrated sequence)
+   - **Background**: atmospheric depth, flat vs. layered
+3. Cross-reference visual findings against Phase 1 code scan results
 
-**타이포그래피**
-- 폰트: CSS/HTML/config의 `Inter`, `Roboto`, `Open Sans`, `Lato`
-- `font-inter`, `font-roboto`, `font-sans`(시스템 폰트 기본값)
+No screenshot tool → skip to Phase 1.
 
-**색상**
-- 보라/바이올렛: `#7C3AED`–`#8B5CF6`, `purple-`, `violet-`, `from-purple`, `from-violet`
-- 일반 파란 CTA: `bg-blue-500`, `bg-blue-600`, `#3B82F6`
+---
 
-**레이아웃**
-- 3열 카드: `grid-cols-3`, `repeat(3`, `.features .grid`
-- 전체 너비 hero 그래디언트: `bg-gradient-to-r from-` + hero/hero-section
+## Phase 1 — Audit
+
+Scan the codebase for AI-default patterns. See [REFERENCE.md](REFERENCE.md) for the full pattern catalog.
+
+### 1-1. Code Pattern Scan
+
+**Typography**
+- Fonts: `Inter`, `Roboto`, `Open Sans`, `Lato` in CSS/HTML/config
+- `font-inter`, `font-roboto`, `font-sans` (system font defaults)
+
+**Color**
+- Purple/violet: `#7C3AED`–`#8B5CF6`, `purple-`, `violet-`, `from-purple`, `from-violet`
+- Generic blue CTA: `bg-blue-500`, `bg-blue-600`, `#3B82F6`
+
+**Layout**
+- 3-column cards: `grid-cols-3`, `repeat(3`, `.features .grid`
+- Full-width hero gradient: `bg-gradient-to-r from-` + hero/hero-section
 
 **CSS/Tailwind**
-- 전체에 걸친 `rounded-xl`, `rounded-2xl`, `border-radius: 16px+`
-- 모든 카드에 `shadow-lg`, `shadow-xl`
-- 번호 장식: CSS counter, `::before { content: "0" counter(...)` }
+- Blanket `rounded-xl`, `rounded-2xl`, `border-radius: 16px+` on everything
+- `shadow-lg`, `shadow-xl` on every card
+- Numbered decorators: CSS counter, `::before { content: "0" counter(...) }`
 
-**🆕 모션 (Motion)**
-- 없음: `animation`, `transition`, `@keyframes` 클래스/속성이 전혀 없음
-- 분산: 모든 카드에 동일한 `hover:scale-105` 적용 (조율 없음)
-- Framer Motion/Motion: 불필요한 여러 곳에 `motion.div` 남발
+**🆕 Motion**
+- Absent: no `animation`, `transition`, or `@keyframes` anywhere
+- Scattered: identical `hover:scale-105` on every card (no orchestration)
+- Overused: `motion.div` on unnecessary elements
 
-**🆕 배경 (Background)**
-- 단색 기본값: `background: #fff`, `bg-white`, `bg-gray-50` 전체 섹션
-- 깊이감 없음: 섹션 간 배경 차이 없음, 레이어링 없음
+**🆕 Background**
+- Flat defaults: `background: #fff`, `bg-white`, `bg-gray-50` across all sections
+- No depth: sections share the same background, no layering
 
-### 1-2. 스택 제약 평가
+### 1-2. Stack Constraint Assessment
 
-현재 스택을 감지하고 디자인 구현 가능성을 평가한다:
+Detect the current stack and evaluate design implementation limits:
 
-| 현재 스택 | 폰트 최적화 | 모션 라이브러리 | 고급 배경 | 마이그레이션 후보 |
-|-----------|-------------|-----------------|-----------|------------------|
-| Vanilla HTML/CSS | Google Fonts `<link>` | CSS transitions만 | CSS gradients | 제한적 |
-| React (CRA/Vite) | Google Fonts `<link>` | Framer Motion 가능 | CSS | 보통 |
-| Next.js | `next/font/google` (최적화) | Motion 라이브러리 | CSS/Canvas | 최적 |
-| Next.js + Tailwind | `next/font/google` | Motion | Tailwind + CSS | 최적 |
+| Stack | Font optimization | Motion library | Advanced backgrounds | Migration candidate |
+|-------|-------------------|----------------|----------------------|---------------------|
+| Vanilla HTML/CSS | Google Fonts `<link>` | CSS transitions only | CSS gradients | Limited |
+| React (CRA/Vite) | Google Fonts `<link>` | Framer Motion available | CSS | Moderate |
+| Next.js | `next/font/google` (optimal) | Motion library | CSS/Canvas | Optimal |
+| Next.js + Tailwind | `next/font/google` | Motion | Tailwind + CSS | Optimal |
 
-**제약 발견 시**: Phase 2 시작 전 마이그레이션 제안. 이유를 설명하고 동의를 받은 후 Phase 3-0에서 실행.
+**When constraints are found**: propose migration before Phase 2. Explain why, get consent, then execute in Phase 3-0.
 
-발견 사항을 **심각도별로** 보고한다: **높음 / 보통 / 낮음**
+Report findings grouped by **severity**: **High / Medium / Low**
 
 ---
 
-## Phase 2 — 기반 잡기 + 디자인 시스템
+## Phase 2 — Ground + Design System
 
-코드를 작성하기 전에 반드시 이 단계를 완료한다.
+Complete this phase entirely before writing any code.
 
-### 2-1. 콘텐츠 기반 확립
+### 2-1. Establish Content Foundation
 
-코드베이스에서 다음을 읽는다:
-- 브랜드명, 서비스·제품 이름
-- 주요 카피 톤 (기술적 / 감성적 / 전문적 / 유머러스)
-- 대상 사용자 (개발자 / 일반 소비자 / 기업)
-- 기존 시각 자산 (로고 색상, 이미지 스타일, 도메인 감성)
+Read from the codebase:
+- Brand name, service/product name
+- Copy tone (technical / emotional / professional / playful)
+- Target audience (developers / general consumers / enterprise)
+- Existing visual assets (logo colors, image style, domain aesthetic)
 
-### 2-2. 디자인 방향 설정 — 5가지 원칙
+### 2-2. Set Design Direction — 5 Principles
 
-각 원칙에 대한 선택을 **명시적으로 선언**한다:
+**Declare your choice for each principle explicitly:**
 
-1. **Hero 핵심 요소** — 가장 특징적인 요소로 시작 (헤드라인 / 이미지 / 인터랙티브 데모 / 애니메이션). "숫자 + 작은 라벨 + 그래디언트" 금지 (진짜 최선일 때만 예외).
-2. **타이포그래피 개성** — 디스플레이 + 본문 폰트를 의도적으로 페어링. 스케일 점프 3배 이상, 굵기 대비 400 vs 800/900.
-3. **구조는 의미를 담는다** — 번호·구분선·라벨은 콘텐츠 논리를 따를 때만 사용. "이 선택이 정말 의미있는가?" 반드시 질문.
-4. **의도적 모션** — 페이지 로드 시 스태거드 리빌 1개 > 분산된 마이크로인터랙션 여러 개. CSS `animation-delay`로 충분한 경우가 많다.
-5. **복잡성 = 비전** — 미니멀이면 정밀하게 실행, 맥시멀이면 정교하게 실행. 과감한 굵기·크기 사용 → 주변을 조용하게.
+1. **Hero statement** — Open with the most characteristic element (headline / image / interactive demo / animation). Forbid generic "big number + small label + gradient" unless genuinely optimal.
+2. **Typography as personality** — Pair display and body typefaces deliberately. Scale jumps of 3× or more, weight contrast 400 vs. 800/900.
+3. **Structure encodes meaning** — Use numbering, dividers, and labels only when they serve content logic. Ask: "Does this choice actually make sense?"
+4. **Motion with purpose** — One orchestrated page-load staggered reveal > several scattered micro-interactions. CSS `animation-delay` is often enough.
+5. **Complexity matches vision** — Minimal work demands precision; maximalist work demands elaboration. Spend boldness in one signature element; keep surroundings quiet.
 
-**진짜 심미적 위험 하나 감수**: 선택한 디자인이 "놀랍거나 예상치 못한" 요소를 하나 포함하는가? 없으면 하나 추가.
+**Take one real aesthetic risk**: does the design include something surprising or unexpected? If not, add one.
 
-### 2-3. 디자인 시스템 토큰 생성
+### 2-3. Generate Design System Tokens
 
-컴팩트한 토큰 시스템을 출력한다:
+Output a compact token system:
 
 ```
-[프로젝트명] 디자인 시스템
+[PROJECT NAME] Design System
 
 COLOR
-  --bg:       #______  (배경 — 흰색 그대로면 재고)
-  --surface:  #______  (카드/패널)
-  --primary:  #______  (주 액션 — 파랑/보라 금지)
-  --accent:   #______  (강조 포인트 1개)
-  --border:   #______  (구분선)
-  --text:     #______  (본문)
-  --muted:    #______  (보조 텍스트)
+  --bg:       #______  (background — reconsider if plain white)
+  --surface:  #______  (cards/panels)
+  --primary:  #______  (main action — no blue or purple)
+  --accent:   #______  (one emphasis color)
+  --border:   #______  (dividers)
+  --text:     #______  (body)
+  --muted:    #______  (secondary text)
 
 TYPE
-  Display: [폰트명] — Google Fonts import 필수
-  Body:    [폰트명]
+  Display: [font name] — Google Fonts import required
+  Body:    [font name]
   Scale:   48px / 32px / 20px / 16px / 13px
 
 SHAPE
-  Button:  border-radius: [X]px  (그래디언트 없음)
+  Button:  border-radius: [X]px  (no gradient)
   Card:    border-radius: [X]px
   Input:   border-radius: [X]px
-  Shadow:  [값 또는 "없음"]
+  Shadow:  [value or "none"]
 
 MOTION
-  Page load: staggered reveal — [대상 요소], delay [X]ms 간격
-  Hover:     [효과] — [적용 위치만]
-  금지:      모든 카드에 동일한 scale/shadow 호버 금지
+  Page load: staggered reveal — [target elements], [X]ms intervals
+  Hover:     [effect] — [specific locations only]
+  Forbidden: identical scale/shadow hover on every card
 
 BACKGROUND
-  Hero:    [레이어드 설명 또는 패턴]
-  Section: [구분 방식 — 색상/패턴/여백]
+  Hero:    [layered description or pattern]
+  Section: [differentiation method — color/pattern/space]
 
-ANTI-PATTERNS (이 프로젝트에서 절대 금지)
+ANTI-PATTERNS (absolutely forbidden for this project)
   - ___________
   - ___________
   - ___________
 ```
 
-### 2-4. 2-pass 자기 비판 게이트
+### 2-4. Two-Pass Self-Critique Gate
 
-**1차 비판**: "이 디자인이 전혀 다른 업종 사이트에도 그대로 쓰일 수 있는가?" → 그렇다면 재설계.
+**First pass**: "Could this design work unchanged for a completely different industry?" → If yes, redesign.
 
-**2차 비판** — 3가지 AI 기본값 대비 체크:
-- warm cream + 세리프 + 테라코타 배색? → 개성 없음, 교체
-- near-black 배경 + 형광 포인트 색상? → 흔한 SaaS 다크모드, 교체
-- broadsheet 3단 컬럼 레이아웃? → AI 기본 그리드, 교체
+**Second pass** — Check against 3 AI defaults:
+- Warm cream + serif + terracotta palette? → generic, replace
+- Near-black background + neon accent? → common SaaS dark mode, replace
+- Broadsheet 3-column layout? → AI default grid, replace
 
-→ 해당 사항 없을 때만 다음 단계로 진행.
+Only proceed when none of the three apply.
 
 ---
 
-## Phase 3 — 스택 마이그레이션 + 적용
+## Phase 3 — Stack Migration + Apply
 
-### 3-0. 스택 마이그레이션 (Phase 1에서 권장된 경우)
+### 3-0. Stack Migration (only if recommended in Phase 1)
 
-Phase 1에서 스택 제약이 발견됐고 사용자 동의를 받은 경우에만 실행.
+Execute only when Phase 1 found a stack constraint and the user has consented.
 
-**마이그레이션 시나리오**:
+**Migration scenarios** (see [REFERENCE.md](REFERENCE.md) for checklists):
 - Vanilla HTML/CSS → Next.js + Tailwind
 - React (CRA/Vite) → Next.js
-- 기존 Tailwind v3 → Tailwind v4 업그레이드
+- Tailwind v3 → Tailwind v4
 
-스택별 상세 마이그레이션 가이드는 [REFERENCE.md](REFERENCE.md)를 참조.
+### 3-1. Apply Fixes
 
-### 3-1. 패턴 적용
+For each file:
+1. State what AI pattern is being removed and what replaces it
+2. Apply the change
+3. Verify the design system token is used (no ad-hoc values)
 
-각 파일에 대해:
-1. 제거하는 AI 패턴이 무엇인지, 무엇으로 대체하는지 명시
-2. 변경 적용
-3. 디자인 시스템 토큰을 사용했는지 확인 (임의 값 금지)
+**Stack-specific approach:**
+- **HTML/CSS**: replace font imports, update CSS custom properties, fix selectors
+- **Tailwind**: update `tailwind.config` theme, replace utility classes in components
+- **React/Next.js**: update `globals.css` variables first, then components top-down
 
-**스택별 접근법:**
-- **HTML/CSS**: 폰트 import 교체, CSS 커스텀 속성 업데이트, 선택자 수정
-- **Tailwind**: `tailwind.config` theme 업데이트, 컴포넌트의 유틸리티 클래스 교체
-- **React/Next.js**: `globals.css` 변수 먼저, 이후 컴포넌트 위에서 아래로
+Work section by section: **hero → nav → features → footer**. Do not rewrite everything at once.
 
-섹션 순서: **hero → nav → features → footer**. 한 번에 전부 재작성 금지.
+**🆕 Motion additions**
+- Page load: one staggered reveal sequence on hero/nav elements
+- Scroll reveal: major section entrances (IntersectionObserver or CSS scroll-driven)
+- Hover: selective — key interactive elements only, no uniform card hover
 
-**🆕 모션 적용**
-- 페이지 로드: hero/nav 요소에 스태거드 리빌 1세트
-- 스크롤 리빌: 주요 섹션 진입 시 (IntersectionObserver 또는 CSS scroll-driven)
-- 호버: 핵심 인터랙션 요소만 선별적으로 (모든 카드 동일 금지)
-
-**🆕 배경 적용**
-- 단색 배경 탈피: CSS 레이어드 그래디언트 또는 기하학적 패턴
-- 섹션별 배경 차별화로 공간감 형성
-- 맥락에 맞는 효과 사용 (기술 사이트 → 미묘한 grid/dot, 브랜드 → 유기적 곡선)
+**🆕 Background additions**
+- Replace flat backgrounds with layered CSS gradients or geometric patterns
+- Differentiate sections with distinct backgrounds to create spatial rhythm
+- Match the effect to context (tech site → subtle grid/dot; brand → organic curves)
 
 ---
 
-## Phase 4 — 시각적 검증 (선택)
+## Phase 4 — Visual Verify (optional)
 
-스크린샷 도구가 있는 경우에만 실행.
+Run only when a screenshot tool is available.
 
-1. 수정 후 재스크린샷 촬영
-2. Phase 0 스크린샷과 나란히 비교
-3. 4개 차원 개선 여부 확인:
-   - **타이포그래피**: 개성이 향상됐는가, 폰트 스케일이 눈에 띄는가
-   - **색상**: AI 기본값에서 벗어났는가, 팔레트가 일관적인가
-   - **모션**: 의도적 애니메이션이 추가됐는가, 과하지 않은가
-   - **배경**: 깊이감이 생겼는가, 섹션별로 구분되는가
-4. 디자인 시스템 토큰 일관성 체크 (임의 색상/폰트 값 없는지)
+1. Take a new screenshot after applying changes
+2. Compare side-by-side with the Phase 0 screenshot
+3. Confirm improvement across 4 dimensions:
+   - **Typography**: personality increased, scale is noticeable
+   - **Color**: moved away from AI defaults, palette is coherent
+   - **Motion**: intentional animation added, not excessive
+   - **Background**: depth added, sections are visually distinct
+4. Check design system token consistency — no stray color or font values
 
 ---
 
-## 트리거 예시
+## Trigger examples
 
 - "이 사이트 AI 티 나는 것 좀 없애줘"
 - "디자인 점검해줘"
