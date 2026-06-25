@@ -1,62 +1,217 @@
 ---
 name: ui-refiner
-description: Scans a web codebase for AI-default design patterns (Inter font, purple gradients, 3-column card grids, excessive border-radius) and refines them into distinctive, human-crafted UI. Generates a project-specific design system, then applies changes across HTML/CSS, Tailwind, and React/Next.js files. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "generic design", or asks to improve existing website aesthetics.
+description: 웹 코드베이스에서 AI 기본값 디자인 패턴(Inter 폰트, 보라 그래디언트, 3열 카드 그리드, 과도한 border-radius)을 감지하고, 브라우저 스크린샷으로 시각적으로 검수한 뒤, 프로젝트 고유 디자인 시스템을 생성하고 적용한다. 필요하면 스택 마이그레이션까지 수행한다. 사용자가 "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "generic design", 또는 웹사이트 디자인 개선을 언급할 때 실행한다.
 ---
 
-# UI Refiner
+# UI 리파이너
 
-Treat yourself as a design lead auditing a site that looks "AI-generated." Work in three phases: scan, design, fix.
+디자인 리드 역할로 "AI가 만든 것 같은" 사이트를 감사한다. 5단계로 진행: 시각적 스냅샷 → 감사 → 기반+디자인 시스템 → 스택 마이그레이션+적용 → 시각적 검증.
 
-## Phase 1 — Scan
+---
 
-Search the codebase for AI-default patterns. Check:
+## Phase 0 — 시각적 스냅샷 (선택)
 
-- Fonts: `Inter`, `Roboto`, `Open Sans`, `Lato` in CSS/HTML/config
-- Colors: purple/violet hex ranges `#7C3AED`–`#8B5CF6`, generic blue `#3B82F6` as primary
-- Layout: 3-column grid cards, full-width hero with gradient overlay
-- CSS: blanket `border-radius` > 8px on everything, `box-shadow` on every card
-- Tailwind: `rounded-xl`, `shadow-lg`, `purple-`, `violet-`, `from-purple` classes
-- Copy: numbered decorators (01/02/03) with no real sequence meaning
+MCP 스크린샷 도구(Preview MCP, Claude in Chrome)가 연결되어 있으면 실행한다.
 
-Report findings as a prioritized list grouped by **severity** (High / Medium / Low).
-See [REFERENCE.md](REFERENCE.md) for the full pattern catalog.
+1. 실행 중인 사이트 스크린샷 촬영
+2. **4개 차원** 시각적 분석:
+   - **타이포그래피**: 폰트 개성, 굵기 대비, 스케일 점프
+   - **색상**: 팔레트 개성, 그래디언트 남발 여부
+   - **모션**: 애니메이션 존재·일관성 (분산된 효과 vs 조율된 연출)
+   - **배경**: 대기감 깊이, 단색 vs 레이어드
+3. 시각적 발견 사항을 Phase 1 코드 스캔 결과와 교차 비교
 
-## Phase 2 — Design System
+스크린샷 도구 없으면 → Phase 1로 바로 진행.
 
-After scanning, generate a project-specific design system **before writing any code**.
+---
 
-1. Read existing content/brand cues from the codebase (product name, copy tone, imagery)
-2. Pick a design direction that fits the subject — not the AI default
-3. Output a compact token system:
-   - **Color**: 4–6 named hex values (primary, bg, surface, border, text, accent)
-   - **Type**: 2 Google Fonts (display + body) — never Inter/Roboto/Open Sans
-   - **Shape**: explicit border-radius values per component type (button / card / input)
-   - **Shadow**: one value or none
-   - **Anti-patterns**: 3+ things explicitly forbidden for this project
+## Phase 1 — 감사 (Audit)
 
-Critique the system: *"Would this design work for a completely different project?"* — if yes, revise.
+코드베이스에서 AI 기본 패턴을 스캔한다. 패턴 전체 카탈로그는 [REFERENCE.md](REFERENCE.md)를 참조.
 
-See [REFERENCE.md](REFERENCE.md) for font recommendations and stack-specific patterns.
+### 1-1. 코드 패턴 스캔
 
-## Phase 3 — Apply
+**타이포그래피**
+- 폰트: CSS/HTML/config의 `Inter`, `Roboto`, `Open Sans`, `Lato`
+- `font-inter`, `font-roboto`, `font-sans`(시스템 폰트 기본값)
 
-Apply fixes file by file. For each file:
+**색상**
+- 보라/바이올렛: `#7C3AED`–`#8B5CF6`, `purple-`, `violet-`, `from-purple`, `from-violet`
+- 일반 파란 CTA: `bg-blue-500`, `bg-blue-600`, `#3B82F6`
 
-1. State what AI patterns are being removed and what replaces them
-2. Apply the change
-3. Verify the design system token is used (not a new ad-hoc value)
+**레이아웃**
+- 3열 카드: `grid-cols-3`, `repeat(3`, `.features .grid`
+- 전체 너비 hero 그래디언트: `bg-gradient-to-r from-` + hero/hero-section
 
-**Stack-specific approach:**
-- **HTML/CSS**: Replace font imports, update CSS custom properties, fix selectors
-- **Tailwind**: Update `tailwind.config` theme, replace utility classes in components
-- **React/Next.js**: Update global CSS / `globals.css`, then components top-down
+**CSS/Tailwind**
+- 전체에 걸친 `rounded-xl`, `rounded-2xl`, `border-radius: 16px+`
+- 모든 카드에 `shadow-lg`, `shadow-xl`
+- 번호 장식: CSS counter, `::before { content: "0" counter(...)` }
 
-Work section by section — hero → nav → features → footer. Do not rewrite everything at once.
+**🆕 모션 (Motion)**
+- 없음: `animation`, `transition`, `@keyframes` 클래스/속성이 전혀 없음
+- 분산: 모든 카드에 동일한 `hover:scale-105` 적용 (조율 없음)
+- Framer Motion/Motion: 불필요한 여러 곳에 `motion.div` 남발
 
-## Trigger examples
+**🆕 배경 (Background)**
+- 단색 기본값: `background: #fff`, `bg-white`, `bg-gray-50` 전체 섹션
+- 깊이감 없음: 섹션 간 배경 차이 없음, 레이어링 없음
+
+### 1-2. 스택 제약 평가
+
+현재 스택을 감지하고 디자인 구현 가능성을 평가한다:
+
+| 현재 스택 | 폰트 최적화 | 모션 라이브러리 | 고급 배경 | 마이그레이션 후보 |
+|-----------|-------------|-----------------|-----------|------------------|
+| Vanilla HTML/CSS | Google Fonts `<link>` | CSS transitions만 | CSS gradients | 제한적 |
+| React (CRA/Vite) | Google Fonts `<link>` | Framer Motion 가능 | CSS | 보통 |
+| Next.js | `next/font/google` (최적화) | Motion 라이브러리 | CSS/Canvas | 최적 |
+| Next.js + Tailwind | `next/font/google` | Motion | Tailwind + CSS | 최적 |
+
+**제약 발견 시**: Phase 2 시작 전 마이그레이션 제안. 이유를 설명하고 동의를 받은 후 Phase 3-0에서 실행.
+
+발견 사항을 **심각도별로** 보고한다: **높음 / 보통 / 낮음**
+
+---
+
+## Phase 2 — 기반 잡기 + 디자인 시스템
+
+코드를 작성하기 전에 반드시 이 단계를 완료한다.
+
+### 2-1. 콘텐츠 기반 확립
+
+코드베이스에서 다음을 읽는다:
+- 브랜드명, 서비스·제품 이름
+- 주요 카피 톤 (기술적 / 감성적 / 전문적 / 유머러스)
+- 대상 사용자 (개발자 / 일반 소비자 / 기업)
+- 기존 시각 자산 (로고 색상, 이미지 스타일, 도메인 감성)
+
+### 2-2. 디자인 방향 설정 — 5가지 원칙
+
+각 원칙에 대한 선택을 **명시적으로 선언**한다:
+
+1. **Hero 핵심 요소** — 가장 특징적인 요소로 시작 (헤드라인 / 이미지 / 인터랙티브 데모 / 애니메이션). "숫자 + 작은 라벨 + 그래디언트" 금지 (진짜 최선일 때만 예외).
+2. **타이포그래피 개성** — 디스플레이 + 본문 폰트를 의도적으로 페어링. 스케일 점프 3배 이상, 굵기 대비 400 vs 800/900.
+3. **구조는 의미를 담는다** — 번호·구분선·라벨은 콘텐츠 논리를 따를 때만 사용. "이 선택이 정말 의미있는가?" 반드시 질문.
+4. **의도적 모션** — 페이지 로드 시 스태거드 리빌 1개 > 분산된 마이크로인터랙션 여러 개. CSS `animation-delay`로 충분한 경우가 많다.
+5. **복잡성 = 비전** — 미니멀이면 정밀하게 실행, 맥시멀이면 정교하게 실행. 과감한 굵기·크기 사용 → 주변을 조용하게.
+
+**진짜 심미적 위험 하나 감수**: 선택한 디자인이 "놀랍거나 예상치 못한" 요소를 하나 포함하는가? 없으면 하나 추가.
+
+### 2-3. 디자인 시스템 토큰 생성
+
+컴팩트한 토큰 시스템을 출력한다:
+
+```
+[프로젝트명] 디자인 시스템
+
+COLOR
+  --bg:       #______  (배경 — 흰색 그대로면 재고)
+  --surface:  #______  (카드/패널)
+  --primary:  #______  (주 액션 — 파랑/보라 금지)
+  --accent:   #______  (강조 포인트 1개)
+  --border:   #______  (구분선)
+  --text:     #______  (본문)
+  --muted:    #______  (보조 텍스트)
+
+TYPE
+  Display: [폰트명] — Google Fonts import 필수
+  Body:    [폰트명]
+  Scale:   48px / 32px / 20px / 16px / 13px
+
+SHAPE
+  Button:  border-radius: [X]px  (그래디언트 없음)
+  Card:    border-radius: [X]px
+  Input:   border-radius: [X]px
+  Shadow:  [값 또는 "없음"]
+
+MOTION
+  Page load: staggered reveal — [대상 요소], delay [X]ms 간격
+  Hover:     [효과] — [적용 위치만]
+  금지:      모든 카드에 동일한 scale/shadow 호버 금지
+
+BACKGROUND
+  Hero:    [레이어드 설명 또는 패턴]
+  Section: [구분 방식 — 색상/패턴/여백]
+
+ANTI-PATTERNS (이 프로젝트에서 절대 금지)
+  - ___________
+  - ___________
+  - ___________
+```
+
+### 2-4. 2-pass 자기 비판 게이트
+
+**1차 비판**: "이 디자인이 전혀 다른 업종 사이트에도 그대로 쓰일 수 있는가?" → 그렇다면 재설계.
+
+**2차 비판** — 3가지 AI 기본값 대비 체크:
+- warm cream + 세리프 + 테라코타 배색? → 개성 없음, 교체
+- near-black 배경 + 형광 포인트 색상? → 흔한 SaaS 다크모드, 교체
+- broadsheet 3단 컬럼 레이아웃? → AI 기본 그리드, 교체
+
+→ 해당 사항 없을 때만 다음 단계로 진행.
+
+---
+
+## Phase 3 — 스택 마이그레이션 + 적용
+
+### 3-0. 스택 마이그레이션 (Phase 1에서 권장된 경우)
+
+Phase 1에서 스택 제약이 발견됐고 사용자 동의를 받은 경우에만 실행.
+
+**마이그레이션 시나리오**:
+- Vanilla HTML/CSS → Next.js + Tailwind
+- React (CRA/Vite) → Next.js
+- 기존 Tailwind v3 → Tailwind v4 업그레이드
+
+스택별 상세 마이그레이션 가이드는 [REFERENCE.md](REFERENCE.md)를 참조.
+
+### 3-1. 패턴 적용
+
+각 파일에 대해:
+1. 제거하는 AI 패턴이 무엇인지, 무엇으로 대체하는지 명시
+2. 변경 적용
+3. 디자인 시스템 토큰을 사용했는지 확인 (임의 값 금지)
+
+**스택별 접근법:**
+- **HTML/CSS**: 폰트 import 교체, CSS 커스텀 속성 업데이트, 선택자 수정
+- **Tailwind**: `tailwind.config` theme 업데이트, 컴포넌트의 유틸리티 클래스 교체
+- **React/Next.js**: `globals.css` 변수 먼저, 이후 컴포넌트 위에서 아래로
+
+섹션 순서: **hero → nav → features → footer**. 한 번에 전부 재작성 금지.
+
+**🆕 모션 적용**
+- 페이지 로드: hero/nav 요소에 스태거드 리빌 1세트
+- 스크롤 리빌: 주요 섹션 진입 시 (IntersectionObserver 또는 CSS scroll-driven)
+- 호버: 핵심 인터랙션 요소만 선별적으로 (모든 카드 동일 금지)
+
+**🆕 배경 적용**
+- 단색 배경 탈피: CSS 레이어드 그래디언트 또는 기하학적 패턴
+- 섹션별 배경 차별화로 공간감 형성
+- 맥락에 맞는 효과 사용 (기술 사이트 → 미묘한 grid/dot, 브랜드 → 유기적 곡선)
+
+---
+
+## Phase 4 — 시각적 검증 (선택)
+
+스크린샷 도구가 있는 경우에만 실행.
+
+1. 수정 후 재스크린샷 촬영
+2. Phase 0 스크린샷과 나란히 비교
+3. 4개 차원 개선 여부 확인:
+   - **타이포그래피**: 개성이 향상됐는가, 폰트 스케일이 눈에 띄는가
+   - **색상**: AI 기본값에서 벗어났는가, 팔레트가 일관적인가
+   - **모션**: 의도적 애니메이션이 추가됐는가, 과하지 않은가
+   - **배경**: 깊이감이 생겼는가, 섹션별로 구분되는가
+4. 디자인 시스템 토큰 일관성 체크 (임의 색상/폰트 값 없는지)
+
+---
+
+## 트리거 예시
 
 - "이 사이트 AI 티 나는 것 좀 없애줘"
 - "디자인 점검해줘"
 - "AI처럼 보이는 부분 고쳐줘"
 - "웹사이트 디자인 개선해줘"
+- "UI 검수해줘"
 - "/ui-refiner"
