@@ -1,301 +1,235 @@
-# 디자인 탈AI — 레퍼런스
+# UI Refiner Reference
 
-## AI 패턴 카탈로그
+This is the long-form catalog. Keep `SKILL.md` short and link here when pattern detail, replacement examples, or migration notes are needed.
 
-### 높음 (즉시 교체)
+## Contents
 
-| 패턴 | 감지 방법 | 이유 |
-|------|-----------|------|
-| Inter 폰트 | `font-family: 'Inter'`, `@import 'Inter'`, `font-inter` | 전체 웹의 기본값 |
-| 보라 그래디언트 | `from-purple`, `from-violet`, `#7C3AED`, `#8B5CF6`, `linear-gradient.*purple` | AI 생성 사이트 95% 공통 |
-| 3열 카드 그리드 | `grid-cols-3`, `repeat(3`, `.features .grid` | 예측 가능한 레이아웃 |
-| 전체 hero 그래디언트 | `bg-gradient-to-r from-` + hero/hero-section | AI 기본 히어로 패턴 |
+- AI-default pattern catalog
+- Motion and background patterns
+- Font recommendations
+- Design system template
+- Stack-specific implementation rules
+- Stack migration notes
+- Two-pass self-critique checklist
 
-### 보통 (맥락 확인 후 교체)
+## AI-default Pattern Catalog
 
-| 패턴 | 감지 방법 | 이유 |
-|------|-----------|------|
-| 과도한 border-radius | `rounded-xl`, `rounded-2xl`, `border-radius: 16px+` on non-pill elements | 맥락 없는 부드러움 |
-| shadow 남발 | `shadow-lg`, `shadow-xl` on every card | 깊이감 없는 장식 |
-| Roboto/Open Sans | `font-family: 'Roboto'`, `'Open Sans'` | 무개성 |
-| 파란 CTA | `bg-blue-500`, `bg-blue-600`, `#3B82F6` as primary action | 전형적 SaaS 기본값 |
-| 분산된 hover 효과 | 모든 카드에 동일한 `hover:scale-105`, `hover:shadow-lg` | 조율 없는 모션 |
-| 단색 섹션 배경 | `bg-white`, `bg-gray-50`, `bg-gray-100` 전체 페이지 동일 | 깊이감·대기감 없음 |
+### High Severity
 
-### 낮음 (선택적 개선)
+| Pattern | Detect | Why | Replace with | Verify |
+|---|---|---|---|---|
+| Inter-first identity | `Inter`, `font-inter`, `font-sans` as the primary brand voice | It is the most common AI/web default and rarely communicates product character | A display/body pair chosen from domain cues, with clear weight and scale contrast | Body and headings use declared tokens; no hidden Inter import remains |
+| Purple/violet gradient hero | `from-purple`, `from-violet`, `#7C3AED`, `#8B5CF6`, `linear-gradient(...purple...)` | It is a common generated landing-page default | Project-specific color system, restrained accent, or image/pattern-led hero | Primary/action colors are not generic blue or purple unless justified by brand |
+| Predictable 3-column feature grid | `grid-cols-3`, `repeat(3`, six icon cards | It flattens product meaning into template blocks | Content-led grouping, comparison, process, split narrative, or interactive demo | Section structure explains the product better than equal-width cards |
+| Full-width gradient hero shell | `hero` plus `bg-gradient-to-r/from-*` or large decorative blobs | It makes unrelated products look interchangeable | One signature first-viewport element: product image, live demo, editorial type, or domain pattern | Hero cannot be reused unchanged for a different industry |
+| Accessibility regression | Missing focus styles, contrast-risk text, motion without reduced-motion fallback | Visual upgrades must not reduce usability | Visible focus, contrast-safe tokens, `prefers-reduced-motion` guards | Keyboard path and reduced-motion behavior remain usable |
 
-| 패턴 | 감지 방법 | 이유 |
-|------|-----------|------|
-| 01/02/03 번호 | CSS counter, `.step::before { content: "0" counter(...) }` | 순서 없는 내용에 사용 시 |
-| 아이콘 그리드 섹션 | icon + title + description × 6 패턴 | 너무 흔한 features 섹션 |
-| Space Grotesk | `font-family: 'Space Grotesk'` | Inter의 2차 수렴 대안 — 역시 과용됨 |
-| 기본 placeholder 텍스트 | "Lorem ipsum", "Your tagline here" | 브랜드 없음 |
+### Medium Severity
 
----
+| Pattern | Detect | Why | Replace with | Verify |
+|---|---|---|---|---|
+| Blanket large radius | `rounded-xl`, `rounded-2xl`, `border-radius: 16px+` across cards/buttons/inputs | Generic softness erases hierarchy | Shape scale by role: compact controls, panels, media, pills | Radius values differ by component role and tokens |
+| Blanket card shadows | `shadow-lg`, `shadow-xl` repeated on every card | Decorative depth without spatial logic | Border, subtle elevation, section background, or none | Elevation marks interaction or hierarchy only |
+| Generic blue CTA | `bg-blue-500`, `bg-blue-600`, `#3B82F6` | SaaS default action color | Brand/intent-specific primary token | CTA color comes from design-system token |
+| Scattered hover effects | Uniform `hover:scale-105`, `hover:shadow-lg` on many elements | Motion feels automated rather than designed | One or two purposeful hover states tied to affordance | Non-interactive cards do not animate like buttons |
+| Flat section backgrounds | Repeated `bg-white`, `bg-gray-50`, `bg-gray-100` | No spatial rhythm or atmosphere | Layered background, contextual texture, or distinct section treatment | Each major section has a reason for its surface |
+| shadcn raw palette drift | Raw Tailwind colors in shadcn-heavy projects | It bypasses theme tokens and makes theming brittle | Semantic tokens and component variants | `components.json` projects keep `background`, `foreground`, `primary`, `muted` semantics |
 
-## 🆕 모션 차원 패턴
+### Low Severity
 
-### 없음 (추가 필요)
+| Pattern | Detect | Why | Replace with | Verify |
+|---|---|---|---|---|
+| Decorative 01/02/03 numbering | CSS counters or numbered cards without real sequence | Suggests process where none exists | Labels, groups, or proof points aligned to content | Numbers only appear for ordered flows |
+| Icon grid filler | Repeated icon/title/description cards | Common generated feature filler | Product screenshots, proof, use cases, or decision aids | Each item answers a real user question |
+| Space Grotesk second default | `Space Grotesk` as a generic "interesting" font | It has become a common Inter replacement | More domain-specific display face or mono/editorial pairing | Font choice is justified by audience and tone |
+| Placeholder copy | `Lorem ipsum`, "Your tagline here", generic benefits | Visual polish cannot hide absent positioning | Specific claims, user language, product verbs | Hero and CTA name the actual product/action |
 
-| 상황 | 신호 | 처방 |
-|------|------|------|
-| 애니메이션 전무 | `animation`, `transition`, `@keyframes` 없음 | 페이지 로드 스태거드 리빌 1세트 추가 |
-| React인데 라이브러리 없음 | framer-motion/motion 없음 | Motion 라이브러리 설치 고려 |
+## Motion Patterns
 
-### 과잉 (정리 필요)
+### Missing Motion
 
-| 패턴 | 감지 방법 | 처방 |
-|------|-----------|------|
-| 전체 hover 동일 | 모든 `.card`, `.feature`에 `hover:scale-105` | 주요 CTA와 카드 1종에만 한정 |
-| 페이지 요소 전체 fade-in | 모든 섹션에 `animate-fade-in` | hero 진입부 1개 시퀀스로 통합 |
+| Signal | Replace with | Verify |
+|---|---|---|
+| No `animation`, `transition`, `@keyframes`, or motion library in an otherwise expressive landing page | One page-load reveal sequence for hero/nav/content | The sequence is brief, coherent, and not repeated everywhere |
+| React app with many state changes but no transition language | Component-level state transitions or CSS transitions | Interactive states feel responsive without distraction |
 
-### 권장 모션 패턴
+### Excess Motion
+
+| Signal | Replace with | Verify |
+|---|---|---|
+| Every card uses the same `hover:scale-105` | CTA hover plus one meaningful card affordance | Hover communicates clickability or state |
+| Every section fades in with identical timing | One hero reveal plus optional section entrance | Motion hierarchy mirrors content hierarchy |
+
+### CSS Pattern
 
 ```css
-/* 페이지 로드 스태거드 리빌 */
-.hero-title   { animation: reveal 0.6s ease both; }
-.hero-sub     { animation: reveal 0.6s 0.1s ease both; }
-.hero-cta     { animation: reveal 0.6s 0.2s ease both; }
+.hero-title { animation: reveal 0.6s ease both; }
+.hero-sub { animation: reveal 0.6s 0.1s ease both; }
+.hero-cta { animation: reveal 0.6s 0.2s ease both; }
 
 @keyframes reveal {
   from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-```
-
----
-
-## 🆕 배경 차원 패턴
-
-### 단색 기본값 (교체 필요)
-
-| 패턴 | 신호 | 처방 |
-|------|------|------|
-| 흰 배경만 | `bg-white` 또는 `background: #fff` 전체 | CSS 레이어드 그래디언트 추가 |
-| 회색 구분 | `bg-gray-50`, `bg-gray-100`만으로 섹션 구분 | 색조 배경 또는 패턴 적용 |
-| 배경 없는 hero | hero에 그래디언트/이미지 없이 단색만 | 맥락에 맞는 효과 추가 |
-
-### 권장 배경 패턴
-
-```css
-/* 미묘한 dot grid — 기술 사이트 */
-.hero {
-  background-image: radial-gradient(circle, #e2e8f0 1px, transparent 1px);
-  background-size: 24px 24px;
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* 레이어드 그래디언트 */
-.hero {
-  background:
-    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(120,40,200,0.08), transparent),
-    #0f0f0f;
-}
-
-/* 대각선 스트라이프 — 개성 있는 accent 섹션 */
-.cta-section {
-  background: repeating-linear-gradient(
-    -45deg, transparent, transparent 10px,
-    rgba(0,0,0,0.03) 10px, rgba(0,0,0,0.03) 20px
-  );
-}
-```
-
----
-
-## 폰트 추천
-
-### 피해야 할 폰트
-`Inter`, `Roboto`, `Open Sans`, `Lato`, `Nunito`, `Poppins`, **`Space Grotesk`** (2차 수렴)
-
-### 대체 폰트 (Google Fonts)
-
-| 느낌 | Display | Body |
-|------|---------|------|
-| 에디토리얼/고급 | Playfair Display | DM Sans |
-| 스타트업/현대 | Clash Display | Satoshi |
-| 기술/코드 감성 | Space Grotesk→ **IBM Plex Mono** | IBM Plex Sans |
-| 개성/브루탈 | Fraunces | Cabinet Grotesk |
-| 미니멀/스위스 | Bricolage Grotesque | Source Sans 3 |
-| 레트로/개성 | Newsreader | DM Serif Display |
-| 따뜻한/유기적 | Crimson Pro | Nunito Sans |
-| 과감/엣지 | Obviously | Syne |
-
-**굵기 원칙:** 400(본문) ↔ 800/900(강조). 400 vs 600은 AI처럼 보임.
-**크기 원칙:** 3배 이상 점프 (14px → 48px). 1.5배 점프는 밋밋함.
-
-### 🆕 문화적 미학 참조
-
-AI 기본값을 피하는 또 다른 방법: 특정 문화·분야의 감성을 영감으로 삼는다.
-
-| 참조 | 특징 | 폰트 힌트 |
-|------|------|-----------|
-| IDE 테마 (VS Code Catppuccin) | 보랏빛 계열 이지만 체계적, 코드 감성 | Fira Code + IBM Plex Sans |
-| 일본 잡지 편집 | 압도적 타이포, 여백 극단 | Shippori Mincho + Noto Sans |
-| 90년대 레이브 포스터 | 네온, 비트맵, 혼돈의 에너지 | VT323 + Space Mono |
-| 스위스 그래픽 디자인 | 그리드, 레드+블랙, 중립 서체 | Neue Haas Grotesk → Barlow |
-| 럭셔리 브랜드 | 많은 여백, 얇은 세리프, 금 accent | Cormorant + Raleway |
-
----
-
-## 디자인 시스템 템플릿
-
-```
-[프로젝트명] 디자인 시스템
-
-COLOR
-  --bg:       #______  (배경 — 흰색 그대로면 재고)
-  --surface:  #______  (카드/패널)
-  --primary:  #______  (주 액션 — 파랑/보라 금지)
-  --accent:   #______  (강조 포인트 1개)
-  --border:   #______  (구분선)
-  --text:     #______  (본문)
-  --muted:    #______  (보조 텍스트)
-
-TYPE
-  Display: [폰트명] — Google Fonts import 필수
-  Body:    [폰트명]
-  Scale:   48px / 32px / 20px / 16px / 13px
-
-SHAPE
-  Button:  border-radius: [X]px  (그래디언트 없음)
-  Card:    border-radius: [X]px
-  Input:   border-radius: [X]px
-  Shadow:  [값 또는 "없음"]
-
-MOTION
-  Page load: staggered reveal — [대상 요소], [X]ms 간격
-  Hover:     [효과] — [적용 위치]
-  금지:      ___________
-
-BACKGROUND
-  Hero:    [설명]
-  Section: [구분 방식]
-
-ANTI-PATTERNS (이 프로젝트에서 절대 금지)
-  - ___________
-  - ___________
-  - ___________
-```
-
----
-
-## 스택별 수정 패턴
-
-### HTML/CSS (Vanilla)
-
-```css
-/* 폰트 교체 — <head>에 Google Fonts link 추가 후 */
-:root {
-  --font-display: 'Playfair Display', serif;
-  --font-body: 'DM Sans', sans-serif;
-}
-
-/* 기존 Inter import 제거 후 */
-body { font-family: var(--font-body); }
-h1, h2, h3 { font-family: var(--font-display); }
-```
-
-### Tailwind
-
-`tailwind.config.js`에 theme extend 추가:
-```js
-theme: {
-  extend: {
-    fontFamily: {
-      display: ['Playfair Display', 'serif'],
-      body: ['DM Sans', 'sans-serif'],
-    },
-    colors: {
-      primary: '#B84A2F',   // 보라 대신 프로젝트 색상
-    },
-    borderRadius: {
-      DEFAULT: '4px',       // rounded-xl 남발 방지
-    },
-    animation: {
-      'reveal': 'reveal 0.6s ease both',
-    },
-    keyframes: {
-      reveal: {
-        from: { opacity: '0', transform: 'translateY(16px)' },
-        to: { opacity: '1', transform: 'translateY(0)' },
-      }
-    }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
   }
 }
 ```
 
-컴포넌트에서 교체:
-- `font-inter` → `font-body`
-- `rounded-xl` → `rounded` (or 명시적 값)
-- `from-purple-500` → 프로젝트 컬러
-- `shadow-lg` on every card → `shadow-sm` or 제거
+## Background Patterns
 
-### React/Next.js
+| Default | Replace with | Verify |
+|---|---|---|
+| Entire page alternates `bg-white` and `bg-gray-50` | Section-specific surfaces, subtle texture, or content-led whitespace | Sections are visually distinct without becoming decorative cards |
+| Generic purple/blue radial blobs | Domain-specific image, grid, diagram, material, or pattern | Background supports product meaning |
+| Hero has no depth or anchor | Layered CSS background, product visual, or full-bleed media | First viewport has one memorable visual signature |
 
-1. `app/globals.css` 또는 `styles/globals.css`에서 CSS 변수 교체
-2. `next/font/google` 사용 시 `Inter` → 선택 폰트로 교체:
-```ts
-// app/layout.tsx
-import { Playfair_Display, DM_Sans } from 'next/font/google'
-const display = Playfair_Display({ subsets: ['latin'], variable: '--font-display' })
-const body = DM_Sans({ subsets: ['latin'], variable: '--font-body' })
+```css
+.technical-hero {
+  background-image: radial-gradient(circle, rgba(15, 23, 42, 0.12) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.editorial-section {
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+    #f7f4ef;
+  background-size: 48px 48px;
+}
 ```
-3. 컴포넌트는 `globals.css` 변수를 통해 자동 반영
-4. Motion 라이브러리 설치: `npm install motion`
 
----
+## Font Recommendations
 
-## 🆕 스택 마이그레이션 가이드
+Avoid as generic defaults: `Inter`, `Roboto`, `Open Sans`, `Lato`, `Nunito`, `Poppins`, and default `Space Grotesk`.
 
-### Vanilla HTML/CSS → Next.js + Tailwind
+| Direction | Display | Body |
+|---|---|---|
+| Editorial / premium | Playfair Display | DM Sans |
+| Technical / precise | IBM Plex Mono | IBM Plex Sans |
+| Brutalist / distinctive | Fraunces | Source Sans 3 |
+| Swiss / structured | Barlow Condensed | Barlow |
+| Retro / literary | Newsreader | DM Serif Display |
+| Sharp / energetic | Syne | Work Sans |
+| Product / calm | Bricolage Grotesque | Source Sans 3 |
 
-제약 조건: `next/font` 불가, Motion 라이브러리 불가, 파일 구조 분산됨
+Rules:
 
-마이그레이션 체크리스트:
-- [ ] `npx create-next-app@latest --tailwind` 프로젝트 생성
-- [ ] 기존 HTML 구조 → `app/page.tsx` 컴포넌트화
-- [ ] CSS → `tailwind.config.js` + `globals.css` 커스텀 속성
-- [ ] `<link>` 폰트 → `next/font/google` 교체
-- [ ] 이미지 `<img>` → `next/image` (`Image` 컴포넌트)
-- [ ] 모션 적용: `motion` 패키지 설치 후 `<motion.div>`
+- Use visible contrast: 400 body vs. 800/900 display where appropriate.
+- Use real scale jumps: 13/16/20/32/48+ rather than tiny 1.2x differences.
+- For CJK-heavy products, choose fonts with proper glyph coverage before visual novelty.
 
-### React (CRA/Vite) → Next.js
+## Design System Template
 
-제약 조건: SSR 없음, `next/font` 불가, 라우팅 다름
+```text
+[PROJECT NAME] Design System
 
-마이그레이션 체크리스트:
-- [ ] `pages/` 또는 `app/` 디렉토리 구조로 재편
-- [ ] `react-router-dom` → Next.js `Link` 컴포넌트
-- [ ] `public/` 정적 파일 그대로 이전
-- [ ] `next/font/google` 폰트 적용
-- [ ] `next.config.js` 설정
+COLOR
+  --bg:       #______  (background; justify if plain white)
+  --surface:  #______  (cards/panels)
+  --primary:  #______  (main action; no generic blue/purple unless brand-owned)
+  --accent:   #______  (one emphasis color)
+  --border:   #______  (dividers)
+  --text:     #______  (body)
+  --muted:    #______  (secondary text)
 
-### Tailwind v3 → Tailwind v4
+TYPE
+  Display: [font name]
+  Body:    [font name]
+  Scale:   48px / 32px / 20px / 16px / 13px
 
-변경 사항: CSS-first 설정, `@import "tailwindcss"`, JIT 기본값
+SHAPE
+  Button:  border-radius: [X]px
+  Card:    border-radius: [X]px
+  Input:   border-radius: [X]px
+  Shadow:  [value or "none"]
 
-마이그레이션 체크리스트:
-- [ ] `tailwind.config.js` → CSS `@theme` 변수로 이전
-- [ ] 사라진 유틸리티 클래스 확인 (`bg-opacity-*` → `bg-black/50`)
-- [ ] `@apply` 사용 최소화 (v4 권장하지 않음)
+MOTION
+  Page load: [sequence], [duration], [delay interval]
+  Hover:     [effect], [specific locations only]
+  Reduced:   [fallback behavior]
 
----
+BACKGROUND
+  Hero:    [layered description or media]
+  Section: [differentiation method]
 
-## 자기 비판 체크리스트 (Phase 2 완료 후)
+ANTI-PATTERNS
+  - [forbidden pattern]
+  - [forbidden pattern]
+  - [forbidden pattern]
+```
 
-**1차 비판**
-- [ ] 이 디자인이 전혀 다른 업종 사이트에도 그대로 쓰일 수 있는가? → 그렇다면 재검토
-- [ ] 폰트 조합이 Inter/Roboto/Space Grotesk 계열인가? → 교체
-- [ ] 주색이 파랑 또는 보라 계열인가? → 교체 (맥락 없을 때)
+## Stack-specific Implementation Rules
 
-**2차 비판 — AI 기본값 3가지 대비**
-- [ ] warm cream + 세리프 + 테라코타 배색에 해당하는가? → 교체
-- [ ] near-black 배경 + 형광 포인트 조합인가? → 교체
-- [ ] broadsheet 3단 컬럼 레이아웃인가? → 교체
+### HTML/CSS
 
-**마무리 체크**
-- [ ] 카드마다 `shadow-lg` + `rounded-xl`인가? → 최소화
-- [ ] Google Fonts `<link>` 태그 또는 `next/font` 설정이 실제로 존재하는가? → 없으면 추가
-- [ ] 모든 섹션 배경이 동일한 단색인가? → 레이어드 배경 추가
-- [ ] 모션이 없거나 전부 동일한 hover인가? → 로드 시퀀스 1개 추가
-- [ ] "진짜 심미적 위험" 요소가 있는가? → 없으면 하나 추가
+- Replace font imports first, then root variables, then component selectors.
+- Prefer CSS custom properties for colors, type, radius, and motion timing.
+- Keep motion CSS small and guard it with `prefers-reduced-motion`.
+
+### Tailwind
+
+- Put brand decisions in `tailwind.config.*`, CSS `@theme`, or global CSS variables before replacing utility classes.
+- Use `gap-*` for internal layout rhythm.
+- Avoid raw `purple-*`, `violet-*`, `blue-500`, and `blue-600` as primary UI language unless brand-owned.
+- Replace repeated `rounded-xl shadow-lg` with role-specific tokens.
+
+### shadcn
+
+- If `components.json` exists, treat shadcn conventions as a constraint.
+- Prefer semantic tokens such as `background`, `foreground`, `primary`, `muted`, `border`, `ring`.
+- Do not replace shadcn primitives with one-off markup unless the component cannot express the needed behavior.
+- Keep accessibility behavior from Radix/shadcn components intact.
+
+### React / Next.js
+
+- Update `globals.css` or theme variables before component markup.
+- In Next.js, prefer `next/font/google` for chosen fonts.
+- Keep layout changes top-down: app shell, hero, major sections, repeated components.
+- Preserve loading, error, empty, and responsive states.
+
+## Stack Migration Notes
+
+Do not migrate automatically. Recommend migration only when the current stack blocks the design goal.
+
+### Vanilla HTML/CSS -> Next.js + Tailwind
+
+- Use when the project needs routed product surfaces, optimized fonts/images, or component reuse.
+- Preserve existing content structure before introducing new visual systems.
+
+### React CRA/Vite -> Next.js
+
+- Use when SSR, file routing, image/font optimization, or deployment expectations require it.
+- Avoid migration for a single static landing page unless the user asks.
+
+### Tailwind v3 -> v4
+
+- Use when the project is already moving to CSS-first theme configuration.
+- Do not mix v3 config assumptions and v4 `@theme` tokens without checking the installed version.
+
+## Two-pass Self-critique Checklist
+
+First pass:
+
+- Could the design work unchanged for a completely different industry? If yes, redesign.
+- Does the font pairing communicate the product's domain and audience? If no, choose again.
+- Is the primary color generic blue/purple without brand reason? If yes, replace.
+- Is the signature visual element memorable but still useful? If no, add one.
+
+Second pass:
+
+- Warm cream + serif + terracotta palette? Replace unless it is explicitly brand-owned.
+- Near-black background + neon accent? Replace unless the product context demands it.
+- Broadsheet 3-column layout? Replace with a structure that explains the product.
+
+Final checks:
+
+- No blanket `rounded-xl shadow-lg` card language.
+- Fonts are actually imported or configured.
+- Backgrounds create spatial rhythm without decorative clutter.
+- Motion is purposeful and reduced-motion safe.
+- Keyboard focus and state copy remain intact.

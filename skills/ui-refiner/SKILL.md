@@ -1,215 +1,127 @@
 ---
 name: ui-refiner
-description: Scans a web codebase for AI-default design patterns (Inter font, purple gradients, 3-column card grids, excessive border-radius), visually inspects the rendered UI via browser screenshot, generates a project-specific design system, and applies the changes. Performs stack migration when needed. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "UI 검수", "generic design", or asks to improve existing website aesthetics.
+description: Audits web codebases for AI-default UI patterns, optionally verifies rendered screens with screenshots, produces a scored design audit, creates a project-specific design system, and applies scoped refinements. Use when user mentions "AI 티", "디자인 개선", "디자인 점검", "AI처럼 보여", "UI 검수", "generic design", or asks to improve existing website aesthetics.
 ---
 
 # UI Refiner
 
-Act as a design lead auditing a site that looks "AI-generated." Work in five phases: visual snapshot → audit → ground + design system → stack migration + apply → visual verify.
+Act as a design lead turning an AI-default web UI into a project-specific interface. The workflow is fixed:
 
----
+1. repo scan
+2. optional screenshot
+3. audit with `AUDIT.md`
+4. output reports with `OUTPUTS.md`
+5. propose design principles and tokens
+6. apply only after the user has approved high-impact changes
+7. optional visual verification
 
-## Phase 0 — Visual Snapshot (optional)
+Use progressive disclosure: read this file first, then open only the reference files needed for the current phase.
 
-Run this phase only when an MCP screenshot tool is connected (Preview MCP, Claude in Chrome).
+## Phase 0 - Repo Scan
 
-1. Take a screenshot of the running site
-2. Analyze across **4 dimensions**:
-   - **Typography**: font personality, weight contrast, scale jumps
-   - **Color**: palette distinctiveness, gradient overuse
-   - **Motion**: animation presence and coherence (scattered effects vs. orchestrated sequence)
-   - **Background**: atmospheric depth, flat vs. layered
-3. Cross-reference visual findings against Phase 1 code scan results
+Always begin by understanding the target project before giving design advice.
 
-No screenshot tool → skip to Phase 1.
+1. Identify stack and UI surface:
+   - `package.json`, framework configs, `components.json`, Tailwind config, route/app directories.
+   - Main UI files and global CSS.
+   - Existing brand/product names, copy tone, and visual assets.
+2. If Node is available, run the local scanner from this skill directory:
 
----
-
-## Phase 1 — Audit
-
-Scan the codebase for AI-default patterns. See [REFERENCE.md](REFERENCE.md) for the full pattern catalog.
-
-### 1-1. Code Pattern Scan
-
-**Typography**
-- Fonts: `Inter`, `Roboto`, `Open Sans`, `Lato` in CSS/HTML/config
-- `font-inter`, `font-roboto`, `font-sans` (system font defaults)
-
-**Color**
-- Purple/violet: `#7C3AED`–`#8B5CF6`, `purple-`, `violet-`, `from-purple`, `from-violet`
-- Generic blue CTA: `bg-blue-500`, `bg-blue-600`, `#3B82F6`
-
-**Layout**
-- 3-column cards: `grid-cols-3`, `repeat(3`, `.features .grid`
-- Full-width hero gradient: `bg-gradient-to-r from-` + hero/hero-section
-
-**CSS/Tailwind**
-- Blanket `rounded-xl`, `rounded-2xl`, `border-radius: 16px+` on everything
-- `shadow-lg`, `shadow-xl` on every card
-- Numbered decorators: CSS counter, `::before { content: "0" counter(...) }`
-
-**🆕 Motion**
-- Absent: no `animation`, `transition`, or `@keyframes` anywhere
-- Scattered: identical `hover:scale-105` on every card (no orchestration)
-- Overused: `motion.div` on unnecessary elements
-
-**🆕 Background**
-- Flat defaults: `background: #fff`, `bg-white`, `bg-gray-50` across all sections
-- No depth: sections share the same background, no layering
-
-### 1-2. Stack Constraint Assessment
-
-Detect the current stack and evaluate design implementation limits:
-
-| Stack | Font optimization | Motion library | Advanced backgrounds | Migration candidate |
-|-------|-------------------|----------------|----------------------|---------------------|
-| Vanilla HTML/CSS | Google Fonts `<link>` | CSS transitions only | CSS gradients | Limited |
-| React (CRA/Vite) | Google Fonts `<link>` | Framer Motion available | CSS | Moderate |
-| Next.js | `next/font/google` (optimal) | Motion library | CSS/Canvas | Optimal |
-| Next.js + Tailwind | `next/font/google` | Motion | Tailwind + CSS | Optimal |
-
-**When constraints are found**: propose migration before Phase 2. Explain why, get consent, then execute in Phase 3-0.
-
-Report findings grouped by **severity**: **High / Medium / Low**
-
----
-
-## Phase 2 — Ground + Design System
-
-Complete this phase entirely before writing any code.
-
-### 2-1. Establish Content Foundation
-
-Read from the codebase:
-- Brand name, service/product name
-- Copy tone (technical / emotional / professional / playful)
-- Target audience (developers / general consumers / enterprise)
-- Existing visual assets (logo colors, image style, domain aesthetic)
-
-### 2-2. Set Design Direction — 5 Principles
-
-**Declare your choice for each principle explicitly:**
-
-1. **Hero statement** — Open with the most characteristic element (headline / image / interactive demo / animation). Forbid generic "big number + small label + gradient" unless genuinely optimal.
-2. **Typography as personality** — Pair display and body typefaces deliberately. Scale jumps of 3× or more, weight contrast 400 vs. 800/900.
-3. **Structure encodes meaning** — Use numbering, dividers, and labels only when they serve content logic. Ask: "Does this choice actually make sense?"
-4. **Motion with purpose** — One orchestrated page-load staggered reveal > several scattered micro-interactions. CSS `animation-delay` is often enough.
-5. **Complexity matches vision** — Minimal work demands precision; maximalist work demands elaboration. Spend boldness in one signature element; keep surroundings quiet.
-
-**Take one real aesthetic risk**: does the design include something surprising or unexpected? If not, add one.
-
-### 2-3. Generate Design System Tokens
-
-Output a compact token system:
-
-```
-[PROJECT NAME] Design System
-
-COLOR
-  --bg:       #______  (background — reconsider if plain white)
-  --surface:  #______  (cards/panels)
-  --primary:  #______  (main action — no blue or purple)
-  --accent:   #______  (one emphasis color)
-  --border:   #______  (dividers)
-  --text:     #______  (body)
-  --muted:    #______  (secondary text)
-
-TYPE
-  Display: [font name] — Google Fonts import required
-  Body:    [font name]
-  Scale:   48px / 32px / 20px / 16px / 13px
-
-SHAPE
-  Button:  border-radius: [X]px  (no gradient)
-  Card:    border-radius: [X]px
-  Input:   border-radius: [X]px
-  Shadow:  [value or "none"]
-
-MOTION
-  Page load: staggered reveal — [target elements], [X]ms intervals
-  Hover:     [effect] — [specific locations only]
-  Forbidden: identical scale/shadow hover on every card
-
-BACKGROUND
-  Hero:    [layered description or pattern]
-  Section: [differentiation method — color/pattern/space]
-
-ANTI-PATTERNS (absolutely forbidden for this project)
-  - ___________
-  - ___________
-  - ___________
+```bash
+node skills/ui-refiner/scripts/audit-ui-patterns.mjs <target-project>
 ```
 
-### 2-4. Two-Pass Self-Critique Gate
+Use `--json` when another tool or report needs structured output.
 
-**First pass**: "Could this design work unchanged for a completely different industry?" → If yes, redesign.
+3. If the scanner cannot run, do a manual scan with the same pattern categories from `AUDIT.md`.
 
-**Second pass** — Check against 3 AI defaults:
-- Warm cream + serif + terracotta palette? → generic, replace
-- Near-black background + neon accent? → common SaaS dark mode, replace
-- Broadsheet 3-column layout? → AI default grid, replace
+## Phase 1 - Optional Visual Snapshot
 
-Only proceed when none of the three apply.
+Run this phase only when a browser/screenshot tool is available or the user supplied screenshots.
 
----
+Assess the rendered UI across:
 
-## Phase 3 — Stack Migration + Apply
+- Typography: personality, hierarchy, weight contrast, scale jumps.
+- Color: palette distinctiveness, gradient/default hue overuse.
+- Motion: missing, scattered, or intentionally orchestrated.
+- Background: flat sections, layered depth, spatial rhythm.
+- Accessibility: focus visibility, contrast risk, reduced-motion handling.
 
-### 3-0. Stack Migration (only if recommended in Phase 1)
+Record findings in the visual snapshot section from `OUTPUTS.md`. If no screenshot path exists, state that the audit is code-only and continue.
 
-Execute only when Phase 1 found a stack constraint and the user has consented.
+## Phase 2 - Audit
 
-**Migration scenarios** (see [REFERENCE.md](REFERENCE.md) for checklists):
-- Vanilla HTML/CSS → Next.js + Tailwind
-- React (CRA/Vite) → Next.js
-- Tailwind v3 → Tailwind v4
+Open `AUDIT.md` and use its scorecard. Group findings by severity:
 
-### 3-1. Apply Fixes
+- High: major AI-default patterns or accessibility regressions.
+- Medium: repeated generic styling that weakens product identity.
+- Low: optional polish opportunities.
 
-For each file:
-1. State what AI pattern is being removed and what replaces it
-2. Apply the change
-3. Verify the design system token is used (no ad-hoc values)
+Also identify stack constraints:
 
-**Stack-specific approach:**
-- **HTML/CSS**: replace font imports, update CSS custom properties, fix selectors
-- **Tailwind**: update `tailwind.config` theme, replace utility classes in components
-- **React/Next.js**: update `globals.css` variables first, then components top-down
+- Vanilla HTML/CSS: limited font optimization and motion primitives.
+- React/Vite/CRA: good component control, no `next/font`.
+- Next.js: preferred for font optimization and routed product surfaces.
+- Tailwind/shadcn: require token discipline and semantic component variants.
 
-Work section by section: **hero → nav → features → footer**. Do not rewrite everything at once.
+Produce the audit report using the template in `OUTPUTS.md`.
 
-**🆕 Motion additions**
-- Page load: one staggered reveal sequence on hero/nav elements
-- Scroll reveal: major section entrances (IntersectionObserver or CSS scroll-driven)
-- Hover: selective — key interactive elements only, no uniform card hover
+## Phase 3 - Ground + Design System
 
-**🆕 Background additions**
-- Replace flat backgrounds with layered CSS gradients or geometric patterns
-- Differentiate sections with distinct backgrounds to create spatial rhythm
-- Match the effect to context (tech site → subtle grid/dot; brand → organic curves)
+Complete this phase before editing code.
 
----
+Read enough project context to determine:
 
-## Phase 4 — Visual Verify (optional)
+- Brand/product name.
+- Audience and intent.
+- Copy tone.
+- Existing color, image, icon, or domain cues.
+- Current interaction density and content hierarchy.
 
-Run only when a screenshot tool is available.
+Then declare exactly five design principles:
 
-1. Take a new screenshot after applying changes
-2. Compare side-by-side with the Phase 0 screenshot
-3. Confirm improvement across 4 dimensions:
-   - **Typography**: personality increased, scale is noticeable
-   - **Color**: moved away from AI defaults, palette is coherent
-   - **Motion**: intentional animation added, not excessive
-   - **Background**: depth added, sections are visually distinct
-4. Check design system token consistency — no stray color or font values
+1. Hero statement: the first viewport must expose the product's most specific value or interaction.
+2. Typography as personality: choose display/body type with visible contrast; avoid Inter/Roboto/Open Sans defaults.
+3. Structure encodes meaning: grids, dividers, labels, and numbers must match the content model.
+4. Motion with purpose: prefer one orchestrated reveal or state transition over repeated hover tricks.
+5. Complexity matches vision: add one signature visual risk, then keep supporting UI restrained.
 
----
+Generate a compact token system with the `Design System Proposal` template from `OUTPUTS.md`. Run the two-pass critique gate from `REFERENCE.md` before applying changes.
 
-## Trigger examples
+## Phase 4 - Apply
 
-- "이 사이트 AI 티 나는 것 좀 없애줘"
-- "디자인 점검해줘"
-- "AI처럼 보이는 부분 고쳐줘"
-- "웹사이트 디자인 개선해줘"
-- "UI 검수해줘"
-- "/ui-refiner"
+Apply only scoped, explainable changes. For each touched area, state the AI-default pattern being removed and the replacement.
+
+Implementation rules:
+
+- HTML/CSS: update font imports, root variables, section backgrounds, and selectors before component details.
+- Tailwind: define/adjust tokens first, then replace utilities. Prefer semantic colors over raw palette classes.
+- shadcn: if `components.json` exists, preserve shadcn structure, component variants, and semantic tokens.
+- React/Next.js: update global styles/font setup first, then page sections top-down.
+- Layout: prefer meaningful asymmetry, content-led grouping, and stable responsive constraints over generic 3-column feature grids.
+- Spacing: prefer `gap-*` for internal layout rhythm; avoid margin chains that create brittle spacing.
+- Motion: add a single purposeful sequence and respect `prefers-reduced-motion`.
+- Accessibility: keep visible focus states, check contrast risk, and preserve empty/loading/error states.
+
+Do not perform stack migrations without explicit user consent.
+
+## Phase 5 - Visual Verify
+
+Run this phase when a screenshot/browser tool is available after changes.
+
+Use the `Visual Verification Report` template from `OUTPUTS.md` and compare before/after across:
+
+- Typography personality and scale.
+- Color distinctiveness and token consistency.
+- Motion intent, restraint, and reduced-motion behavior.
+- Background depth and section differentiation.
+- Responsive layout at desktop and mobile widths.
+- Keyboard focus, contrast risk, and state copy.
+
+If visual verification is unavailable, report the exact non-visual checks that were run and the remaining risk.
+
+## Reference Files
+
+- `AUDIT.md`: scorecard, severity rules, stack-specific audit commands, accessibility checks.
+- `OUTPUTS.md`: required report templates.
+- `REFERENCE.md`: pattern catalog, token examples, migration notes, self-critique checklist.
